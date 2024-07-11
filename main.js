@@ -7,13 +7,12 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
 
 //load the form
 const formEl = document.querySelector("form");
-console.log(formEl);
+
 //get the input
-const input = document.getElementById("upload-file");
+const input = document.querySelector("input[type=file]");
 
 //get the loader
 const loader = document.querySelector(".loader");
-console.log(loader);
 
 //image preview element
 const imgPreview = document.querySelector(".img-preview");
@@ -37,8 +36,9 @@ input.addEventListener("change", function () {
 });
 
 formEl.addEventListener("submit", async (e) => {
+  e.preventDefault();
   //check if the image is uploaded
-  if (input.files[0]) {
+  if (!input.files[0]) {
     return;
   }
 
@@ -46,32 +46,27 @@ formEl.addEventListener("submit", async (e) => {
   loader.classList.remove("hidden");
 
   const text = await run();
-  displayResult();
+  displayResult(text);
 });
 
 //convet a file object to GooglegenearativeAi part object;
 
 async function fileToGenerativePart(file) {
-  const encodedDataPromise = new Promise((resolve) => {
-    const reader = new fileReader();
-
-    reader.onloadend = () => resolve(reader.result.split(","[1]));
+  const base64EncodedDataPromise = new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(",")[1]);
     reader.readAsDataURL(file);
   });
-
   return {
-    inlineData: {
-      data: await encodedDataPromise,
-      mimeType: file.type,
-    },
+    inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
   };
 }
 
 async function run() {
-  const model = genAI.getGenerativeModel({ model: "gemini-pro-vission" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
   const imageParts = await Promise.all(
-    [...fileInputEl.files].map(fileToGenerativePart)
+    [...input.files].map(fileToGenerativePart)
   );
 
   const result = await model.generateContent([prompt, ...imageParts]);
@@ -82,3 +77,47 @@ async function run() {
 
   return text;
 }
+
+//display Result
+const displayResult = function (text) {
+  loader.classList.add("hidden");
+
+  const obj = JSON.parse(text);
+
+  const result = document.querySelector(".result");
+
+  if (obj.error) {
+    result.innerHTML = `${obj.error}`;
+  } else {
+    const { name, ingredients, instructions, healthBenefits } = obj;
+
+    result.innerHTML = `
+    <h2>${name}</h2>
+    <h4>Ingredients:</h4>
+    <ol>${ingredients
+      .map((text) => {
+        return `<li>${text}</li>`;
+      })
+      .join(" ")}
+  </ol>
+      <h4>Instructions:</h4>
+      <ol>${instructions
+        .map((text) => {
+          return `<li>${text}</li>`;
+        })
+        .join(" ")}
+    </ol>
+    ${
+      healthBenefits &&
+      `<h4>Health Benefits:</h4>
+        <ol>
+            ${healthBenefits
+              .map((text) => {
+                return `<li>${text}</li>`;
+              })
+              .join(" ")}
+        </ol>`
+    }
+    `;
+  }
+};
