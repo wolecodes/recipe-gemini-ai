@@ -21,6 +21,7 @@ const imgPreview = document.querySelector(".img-preview");
 const getImgData = function () {
   const files = input.files[0];
 
+  document.querySelector(".result").innerHTML = "";
   if (files) {
     const fileReader = new FileReader();
     fileReader.readAsDataURL(files);
@@ -30,6 +31,7 @@ const getImgData = function () {
     });
   }
 };
+
 // listen when choose file is click;
 input.addEventListener("change", function () {
   getImgData();
@@ -61,6 +63,8 @@ async function fileToGenerativePart(file) {
     inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
   };
 }
+
+
 // bug: fix the run
 async function run() {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
@@ -87,7 +91,7 @@ const displayResult = function (text) {
   const result = document.querySelector(".result");
 
   if (obj.error) {
-    result.innerHTML = `${obj.error}`;
+    result.innerHTML = `<p>${obj.error}</p>`;
   } else {
     const { name, ingredients, instructions, healthBenefits } = obj;
 
