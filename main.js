@@ -64,7 +64,6 @@ async function fileToGenerativePart(file) {
   };
 }
 
-
 // bug: fix the run
 async function run() {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
