@@ -47,6 +47,9 @@ formEl.addEventListener("submit", async (e) => {
   //if the image was uploaded, then remove hidden from loader;
   loader.classList.remove("hidden");
 
+  document.querySelector(".result").innerHTML =
+    '<p class="placeholder">Generating recipe...</p>';
+
   const text = await run();
   displayResult(text);
 });
@@ -90,7 +93,7 @@ const displayResult = function (text) {
   const result = document.querySelector(".result");
 
   if (obj.error) {
-    result.innerHTML = `<p>${obj.error}</p>`;
+    result.innerHTML = `<p class= "placeholder">${obj.error}</p>`;
   } else {
     const { name, ingredients, instructions, healthBenefits } = obj;
 
